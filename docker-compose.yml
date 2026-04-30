@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: betiq-db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=BetIQ_Pass_2026!
+    ports:
+      - "1433:1433"
+    networks:
+      - betiq-network
+
+  api:
+    build:
+      context: .
+      dockerfile: BetIQ.API/Dockerfile
+    container_name: betiq-api
+    ports:
+      - "5023:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__BetIQConnection=Server=db;Database=BetIQ_DB;User Id=sa;Password=BetIQ_Pass_2026!;TrustServerCertificate=True
+    depends_on:
+      - db
+    networks:
+      - betiq-network
+
+  web:
+    build:
+      context: ./BetIQ.Web
+      dockerfile: Dockerfile
+    container_name: betiq-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - betiq-network
+
+networks:
+  betiq-network:
+    driver: bridge

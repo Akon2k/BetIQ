@@ -1,0 +1,6 @@
+@BetIQ.API_HostAddress = http://localhost:5023
+
+GET {{BetIQ.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

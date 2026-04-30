@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BetIQ | Inteligencia Deportiva</title>
+    <!-- Incluyendo tipografía de Google -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header class="app-header">
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span style="color:white; font-weight: 300;">Tri</span>BET
+        </div>
+        <nav class="app-nav">
+            <a href="#dashboard" class="active">Dashboard</a>
+            <a href="#nba-matches">Eventos</a>
+            <a href="#value-bets">Radar</a>
+            <a href="#posiciones">Ranking</a>
+        </nav>
+        <div class="sport-selector">
+            <select id="sportContext">
+                <option value="NBA" selected>🏀 NBA</option>
+                <option value="Futbol">⚽ Fútbol</option>
+                <option value="Tenis">🎾 Tenis</option>
+            </select>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <section class="panel">
+            <div class="panel-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    Oportunidades del Mercado
+                </h2>
+                <span id="dateOfAnalysis" style="color: var(--text-muted); font-size: 0.9rem;">Analizando...</span>
+            </div>
+            
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Cruces matemáticos entre Modelo ELO BetIQ y Cuotas Mundiales The Odds API.</p>
+            
+            <!-- Layout 2 columnas: Apuestas (izq) + Glosario (der) -->
+            <div class="radar-layout">
+                <!-- Columna izquierda: tarjetas de apuestas -->
+                <div id="valueBetsContainer" class="opportunities-grid">
+                    <div class="spinner"></div>
+                </div>
+
+                <!-- Columna derecha: Glosario vertical -->
+                <div class="glosario-panel glosario-sidebar">
+                    <h3 style="margin-bottom: 14px; color: var(--accent-secondary); font-size: 1rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        Glosario del Radar
+                    </h3>
+                    <div class="glosario-grid glosario-vertical">
+                        <div class="glosario-item">
+                            <strong>EV+ (Expected Value)</strong>
+                            <p>Ganancia matemática promedio a largo plazo. Un EV de <code>+1.71</code> significa $171 extra por cada $100 apostados repetidos infinitas veces.</p>
+                        </div>
+                        <div class="glosario-item">
+                            <strong>Criterio de Kelly</strong>
+                            <p>Fórmula de gestión de capital que te indica exactamente qué % de tu <strong>Bankroll</strong> apostar para maximizar crecimiento y evitar la ruina.</p>
+                        </div>
+                        <div class="glosario-item">
+                            <strong>Prob. ELO vs Cuota</strong>
+                            <p>La "Prob. ELO" usa inteligencia histórica. La "Cuota" refleja la probabilidad del casino. BetIQ detecta la ineficiencia entre ambas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Partidos NBA del Día -->
+        <section id="nbaMatches" class="panel">
+            <div class="panel-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ff9f43;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20"/><path d="M2.05 12h19.9"/><path d="M12 22A14.5 14.5 0 0 0 12 2"/></svg>
+                    Partidos NBA de Hoy
+                </h2>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <!-- Selector de Liga ESPN (visible sólo en Fútbol) -->
+                    <div id="ligaSelectorWrap" style="display:none;">
+                        <select id="ligaSelector" style="background:rgba(255,255,255,0.06); border:1px solid var(--border-glass); color:var(--text-main); padding:5px 12px; border-radius:20px; font-size:0.85rem; font-weight:600; cursor:pointer; outline:none;">
+                            <option value="">⚽ Todas las Ligas</option>
+                            <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+                            <option value="LaLiga">🇪🇸 LaLiga</option>
+                            <option value="Serie A">🇮🇹 Serie A</option>
+                            <option value="Bundesliga">🇩🇪 Bundesliga</option>
+                            <option value="Ligue 1">🇫🇷 Ligue 1</option>
+                            <option value="Champions League">⭐ Champions League</option>
+                        </select>
+                    </div>
+                    <span id="nbaMatchesDate" style="color: var(--text-muted); font-size: 0.9rem;">Cargando...</span>
+                </div>
+            </div>
+            <div id="nbaMatchesContainer" class="matches-grid">
+                <div class="spinner"></div>
+            </div>
+        </section>
+
+
+        <!-- Modulo Calculadora Original -->
+        <section id="calculadora" class="panel">
+            <div class="panel-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="16" y1="18" x2="16.01" y2="18"/></svg>
+                    Simulador ELO En Vivo
+                </h2>
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <div id="surfaceSelectorWrap" style="display: none; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">SUPERFICIE</span>
+                        <select id="surfaceSelector" style="background: transparent; border: none; color: var(--accent-secondary); padding: 0; margin-left: 5px; outline: none; font-weight: bold; font-family: var(--font-family); cursor: pointer;">
+                            <option value="Arcilla">Arcilla</option>
+                            <option value="Dura">Dura</option>
+                            <option value="Pasto">Pasto</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">BANKROLL</span>
+                        <span style="color: var(--success); font-weight: 800;">$</span>
+                        <input type="number" id="bankrollInput" value="1000" style="background: transparent; border: none; color: white; width: 80px; padding: 0; outline: none; font-weight: bold; font-family: var(--font-family);">
+                    </div>
+                </div>
+            </div>
+
+            <div class="calculator-wrap">
+                <!-- Local -->
+                <div class="team-block">
+                    <div class="input-group">
+                        <label>EQUIPO LOCAL</label>
+                        <select id="localSelect"><option value="">Cargando...</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label>CUOTA DE LA CASA</label>
+                        <input type="number" id="localOdds" step="0.01" min="1.01" value="1.85">
+                    </div>
+                </div>
+
+                <!-- Centro -->
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                    <div class="vs-badge">VS</div>
+                    <button id="btnCalculate" class="btn-primary" disabled>PROYECTAR</button>
+                </div>
+
+                <!-- Visita -->
+                <div class="team-block">
+                    <div class="input-group">
+                        <label>EQUIPO VISITANTE</label>
+                        <select id="visitorSelect"><option value="">Cargando...</option></select>
+                    </div>
+                    <div class="input-group">
+                        <label>CUOTA DE LA CASA</label>
+                        <input type="number" id="visitorOdds" step="0.01" min="1.01" value="1.95">
+                    </div>
+                </div>
+            </div>
+
+            <div id="predictionResult" class="result-box hidden">
+                <h3 id="winnerText" style="font-size: 1.5rem; margin-bottom: 1rem;">--</h3>
+                <div id="evAlerts" style="display: flex; justify-content: center; gap: 2rem;"></div>
+            </div>
+        </section>
+
+        <!-- Ranking de Poder -->
+        <section id="ranking" class="panel">
+            <div class="panel-header">
+                <h2>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary);"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Clasificación de Poder (ELO Ranking)
+                </h2>
+            </div>
+            <div class="table-responsive">
+                <table id="rankingTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;">Rango</th>
+                            <th>Franquicia</th>
+                            <th>Puntuación ELO</th>
+                            <th>Status (1500=Base)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankingBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem;"><div class="spinner"></div></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div> <!-- missing close div added -->
+            <div id="rankingPagination" class="pagination-controls"></div>
+        </section>
+
+        <!-- Sección de Posiciones NBA -->
+            <section id="posiciones" class="panel standings-section">
+                <div class="panel-header" style="flex-direction: column; align-items: flex-start;">
+                    <h2><span class="icon">🏆</span> Tabla de Posiciones Oficiales</h2>
+                    <p style="color:var(--text-muted); margin-top:5px;">Rendimiento actualizado de la temporada regular, dividido por Conferencias.</p>
+                </div>
+                
+                <div class="standings-grid">
+                    <!-- Conferencia Este -->
+                    <div class="conference-panel">
+                        <div class="conference-header east">
+                            <h3>Conferencia Este</h3>
+                        </div>
+                        <div class="table-container fade-in">
+                            <table class="elo-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Equipo</th>
+                                        <th>PJ</th>
+                                        <th>V</th>
+                                        <th>D</th>
+                                        <th>PCT</th>
+                                        <th class="hide-mobile">PF</th>
+                                        <th class="hide-mobile">PC</th>
+                                        <th>DIF</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standings-east-body">
+                                    <!-- Datos de conferencia este inyectados por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Conferencia Oeste -->
+                    <div class="conference-panel">
+                        <div class="conference-header west">
+                            <h3>Conferencia Oeste</h3>
+                        </div>
+                        <div class="table-container fade-in">
+                            <table class="elo-table">
+                                <thead>
+                                    <tr>
+                                        <th>Pos</th>
+                                        <th>Equipo</th>
+                                        <th>PJ</th>
+                                        <th>V</th>
+                                        <th>D</th>
+                                        <th>PCT</th>
+                                        <th class="hide-mobile">PF</th>
+                                        <th class="hide-mobile">PC</th>
+                                        <th>DIF</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="standings-west-body">
+                                    <!-- Datos de conferencia oeste inyectados por JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

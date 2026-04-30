@@ -1,0 +1,771 @@
+:root {
+    /* Sentinel Design System - Indigo/Graphite */
+    --bg-dark: #0a0a0c; 
+    --bg-panel: rgba(16, 16, 20, 0.8); 
+    --surface: #111114;
+    --border-glass: rgba(255, 255, 255, 0.05);
+    --text-main: #f1f5f9;
+    --text-muted: #64748b;
+    
+    /* Acentos Sentinel */
+    --accent-primary: #4f46e5; /* Indigo 600 */
+    --accent-secondary: #0ea5e9; /* Sky 500 */
+    --accent-glow: rgba(79, 70, 229, 0.3);
+    --secondary-glow: rgba(14, 165, 233, 0.2);
+    
+    /* Estados */
+    --success: #10b981; 
+    --success-glow: rgba(16, 185, 129, 0.1);
+    --danger: #f43f5e; 
+    --danger-glow: rgba(244, 63, 94, 0.1);
+    --warning: #f59e0b; 
+
+    /* Tipografía */
+    --font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    min-height: 100vh;
+    /* Gradiente radial animado de fondo */
+    background: radial-gradient(circle at 10% 40%, rgba(99, 102, 241, 0.1), transparent 30%),
+                radial-gradient(circle at 90% 20%, rgba(34, 211, 238, 0.1), transparent 30%),
+                var(--bg-dark);
+    display: flex;
+    flex-direction: column;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+    opacity: 0.02;
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-dark); }
+::-webkit-scrollbar-thumb { background: var(--border-glass); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
+
+/* Header Glassmorphism */
+.app-header {
+    background: rgba(10, 10, 15, 0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border-glass);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.app-nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+}
+
+.app-nav a:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.app-nav a.active {
+    color: var(--accent-primary);
+    background: rgba(79, 70, 229, 0.1);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+/* Sport Selector */
+.sport-selector {
+    margin-left: 1.5rem;
+}
+
+#sportContext {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(8px);
+}
+
+#sportContext:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent-secondary);
+    box-shadow: 0 0 15px rgba(0, 206, 201, 0.2);
+}
+
+#sportContext option {
+    background: var(--bg-dark);
+    color: var(--text-main);
+    padding: 10px;
+}
+
+/* Layout Principal */
+.dashboard-container {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+/* Paneles Globales */
+.panel {
+    background: var(--bg-panel);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Sección Oportunidades (Value Bets) */
+.opportunities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.vb-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.vb-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+    border-color: var(--accent-primary);
+}
+
+/* Efecto borde infinito en Value Bets de alto valor */
+.vb-card.high-value::before {
+    content: '';
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(transparent, transparent, transparent, var(--success));
+    animation: rotateBoundary 4s linear infinite;
+    z-index: 0;
+    opacity: 0.3;
+}
+.vb-card.high-value::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: var(--bg-panel);
+    border-radius: 11px;
+    z-index: 1;
+}
+
+@keyframes rotateBoundary {
+    100% { transform: rotate(360deg); }
+}
+
+.vb-content {
+    position: relative;
+    z-index: 2;
+}
+
+.vb-teams {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.vb-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 1rem;
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.metric-box {
+    display: flex;
+    flex-direction: column;
+}
+.metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+.metric-value { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
+.metric-value.positive { color: var(--success); text-shadow: 0 0 10px var(--success-glow); }
+
+/* Partidos NBA */
+.matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.match-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-glass);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: all 0.3s ease;
+}
+
+.match-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+    border-color: var(--accent-primary);
+}
+
+
+
+.match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.match-status {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: var(--text-muted);
+}
+.match-status.live {
+    background: rgba(255, 118, 117, 0.2);
+    color: var(--danger);
+    font-weight: bold;
+}
+
+.match-team {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.match-score {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.match-odds {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px dashed var(--border-glass);
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+/* Glosario Panel */
+.glosario-panel {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(0,0,0,0.2);
+    border: 1px dashed var(--border-glass);
+    border-radius: 12px;
+}
+
+.glosario-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.glosario-item {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.glosario-item strong {
+    display: block;
+    color: var(--text-main);
+    margin-bottom: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.glosario-item code {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 4px;
+    border-radius: 4px;
+    color: var(--success);
+}
+
+/* Calculadora Flex */
+.calculator-wrap {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: center;
+    background: rgba(0,0,0,0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+}
+
+.team-block {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+select, input[type="number"] {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+select:focus, input[type="number"]:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+select option {
+    background: var(--bg-dark);
+    color: var(--text-main);
+}
+
+.vs-badge {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--bg-dark), #1a1a24);
+    border: 2px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-size: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    width: 100%;
+    margin-top: 1.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--accent-glow);
+}
+.btn-primary:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.5;
+}
+
+/* Resultados Calculadora */
+.result-box {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--border-glass);
+    text-align: center;
+}
+.result-box.active {
+    border-style: solid;
+    border-color: var(--accent-secondary);
+    background: rgba(0, 206, 201, 0.05);
+}
+
+/* Tabla Ranking */
+.table-responsive {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1.2rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-glass);
+    font-size: 0.9rem;
+}
+
+th {
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+tbody tr {
+    transition: background 0.2s ease;
+}
+tbody tr:hover {
+    background: rgba(255,255,255,0.03);
+}
+
+.rank-badge {
+    background: rgba(255,255,255,0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+.rank-top {
+    background: linear-gradient(135deg, #f1c40f, #e67e22);
+    color: #fff;
+}
+
+/* Utilidades y UI Modifiers */
+/* Colapsables */
+.panel-header, .section-header {
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.3s;
+}
+.panel-header:hover, .section-header:hover { opacity: 0.8; }
+.toggle-icon {
+    display: inline-block;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-muted);
+}
+.collapsed .toggle-icon {
+    transform: rotate(-180deg);
+}
+.panel.collapsed > :not(.panel-header), 
+.standings-section.collapsed > :not(.section-header) {
+    display: none !important;
+}
+
+/* Paginación Ranking */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-bottom: 10px;
+}
+.btn-page {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    color: var(--text-main);
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+.btn-page:hover:not(:disabled) {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+.btn-page:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+.page-info {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255,255,255,0.1);
+    border-top-color: var(--accent-primary);
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+    margin: 0 auto;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* ==========================================================================
+   Sección Tablas de Posiciones y Conferencias
+   ========================================================================== */
+.standings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.conference-panel {
+    background: var(--surface);
+    border: 1px solid var(--border-glass);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.conference-header {
+    padding: 1.5rem;
+    text-align: center;
+    border-bottom: 2px solid;
+    background: linear-gradient(0deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0) 100%);
+}
+
+.conference-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.conference-header.east {
+    border-bottom-color: #1E88E5; /* Azul Este */
+}
+.conference-header.east h3 {
+    color: #90CAF9;
+    text-shadow: 0 0 10px rgba(30, 136, 229, 0.4);
+}
+
+.conference-header.west {
+    border-bottom-color: #E53935; /* Rojo Oeste */
+}
+.conference-header.west h3 {
+    color: #EF9A9A;
+    text-shadow: 0 0 10px rgba(229, 57, 53, 0.4);
+}
+
+.standings-section table {
+    margin: 0; /* Quita el margen de elo-table base */
+    border-radius: 0; /* Quita border radius porque el panel lo tiene */
+}
+
+/* Filas de la tabla de posiciones */
+.standings-section tbody tr:nth-child(1),
+.standings-section tbody tr:nth-child(2),
+.standings-section tbody tr:nth-child(3),
+.standings-section tbody tr:nth-child(4),
+.standings-section tbody tr:nth-child(5),
+.standings-section tbody tr:nth-child(6) {
+    border-left: 3px solid var(--success); /* Zona de Playoffs (1-6) */
+}
+
+.standings-section tbody tr:nth-child(7),
+.standings-section tbody tr:nth-child(8),
+.standings-section tbody tr:nth-child(9),
+.standings-section tbody tr:nth-child(10) {
+    border-left: 3px solid var(--warning); /* Zona de Play-In (7-10) */
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 900px) {
+    .calculator-wrap {
+        grid-template-columns: 1fr;
+    }
+
+    .standings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .hide-mobile {
+        display: none;
+    }
+
+    .val-header {
+        margin: 0 auto;
+        transform: rotate(90deg);
+    }
+
+    /* En móvil, el glosario va abajo */
+    .radar-layout {
+        flex-direction: column !important;
+    }
+    .glosario-sidebar {
+        width: 100% !important;
+        border-left: none !important;
+        border-top: 1px solid var(--border-glass);
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+    }
+}
+
+/* ============================================================
+   Radar Layout: 2 columnas (apuestas + glosario sidebar)
+   ============================================================ */
+.radar-layout {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+/* Apuestas ocupa TODO el espacio restante - 3 columnas uniformes */
+.radar-layout .opportunities-grid {
+    flex: 1 1 0;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    align-content: start;
+}
+
+/* Glosario sidebar fijo a la derecha - más angosto */
+.glosario-sidebar {
+    flex: 0 0 220px;
+    width: 220px;
+    border-left: 1px solid var(--border-glass);
+    padding-left: 1.5rem;
+    position: sticky;
+    top: 80px;
+}
+
+/* Glosario vertical: items apilados */
+.glosario-vertical {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.2rem !important;
+    grid-template-columns: 1fr !important;
+}
+
+.glosario-vertical .glosario-item {
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    border-left: 3px solid var(--accent-secondary);
+}
+
+.glosario-vertical .glosario-item strong {
+    display: block;
+    color: var(--accent-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.4rem;
+}
+
+.glosario-vertical .glosario-item p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+.glosario-vertical .glosario-item code {
+    background: rgba(0,210,211,0.15);
+    color: var(--accent-secondary);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+}
+
+/* Estilos base del panel glosario */
+.glosario-panel h3 {
+    display: flex;
+    align-items: center;
+    color: var(--accent-secondary);
+}
