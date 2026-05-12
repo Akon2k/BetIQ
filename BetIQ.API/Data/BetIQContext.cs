@@ -7,7 +7,6 @@ namespace BetIQ.API.Data
     {
         public BetIQContext(DbContextOptions<BetIQContext> options) : base(options)
         {
-            Database.EnsureCreated();
         }
 
         public DbSet<NBAMatch> Partidos_NBA { get; set; }

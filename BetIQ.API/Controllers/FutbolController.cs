@@ -153,21 +153,20 @@ namespace BetIQ.API.Controllers
             p.GolesVisitante = resultado.PuntosVisitante;
             p.PartidoMaestro.Estado = "Finalizado";
 
-            // Recalcular ELO de Futbol (asumimos que EloService soporta genérico o creamos lógica)
-            var eloService = HttpContext.RequestServices.GetRequiredService<IEloService>();
-            int eloLocal = await eloService.ObtenerEloActual(p.EquipoLocal, "Futbol");
-            int eloVisita = await eloService.ObtenerEloActual(p.EquipoVisitante, "Futbol");
+            // Recalcular ELO de Fútbol
+            int eloLocal = await _eloService.ObtenerEloActual(p.EquipoLocal, "Futbol");
+            int eloVisita = await _eloService.ObtenerEloActual(p.EquipoVisitante, "Futbol");
             
-            double probLocal = eloService.CalcularProbabilidadVictoria(eloLocal, eloVisita, true);
-            double probVisita = eloService.CalcularProbabilidadVictoria(eloVisita, eloLocal, false);
+            double probLocal = _eloService.CalcularProbabilidadVictoria(eloLocal, eloVisita, true);
+            double probVisita = _eloService.CalcularProbabilidadVictoria(eloVisita, eloLocal, false);
 
             int k = 32;
-            int actLocal = p.GolesLocal > p.GolesVisitante ? 1 : (p.GolesLocal == p.GolesVisitante ? 0 : 0);
-            int actVisita = p.GolesVisitante > p.GolesLocal ? 1 : (p.GolesLocal == p.GolesVisitante ? 0 : 0);
-            if (p.GolesLocal == p.GolesVisitante) { actLocal = 1; actVisita = 1; } // Tie adjustment can be improved later
+            // En ELO: Victoria = 1.0, Empate = 0.5, Derrota = 0.0
+            double actLocal = p.GolesLocal > p.GolesVisitante ? 1.0 : (p.GolesLocal == p.GolesVisitante ? 0.5 : 0.0);
+            double actVisita = p.GolesVisitante > p.GolesLocal ? 1.0 : (p.GolesLocal == p.GolesVisitante ? 0.5 : 0.0);
 
-            int nuevoLocal = eloLocal + (int)(k * (actLocal - probLocal));
-            int nuevoVisita = eloVisita + (int)(k * (actVisita - probVisita));
+            int nuevoLocal = (int)Math.Round(eloLocal + k * (actLocal - probLocal));
+            int nuevoVisita = (int)Math.Round(eloVisita + k * (actVisita - probVisita));
 
             var equipoLocalObj = await _context.Equipos.FirstOrDefaultAsync(x => x.NombreEquipo == p.EquipoLocal && x.Deporte == "Futbol");
             var equipoVisitaObj = await _context.Equipos.FirstOrDefaultAsync(x => x.NombreEquipo == p.EquipoVisitante && x.Deporte == "Futbol");

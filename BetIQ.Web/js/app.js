@@ -371,7 +371,7 @@ async function loadValueBets() {
             card.innerHTML = `
                 <div class="vb-content">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 1rem;">
-                        <span style="background:var(--success-glow); color:var(--success); padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:800;">
+                        <span style="background:var(--success-soft); color:var(--success); padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:800;">
                             EV+ ${betTarget.ev}
                         </span>
                         <div style="text-align: right;">
@@ -402,7 +402,7 @@ async function loadValueBets() {
                         </div>
                     </div>
 
-                    <div style="margin-top: 1.5rem; border-top: 1px dashed var(--border-glass); padding-top: 1rem;">
+                    <div style="margin-top: 1.5rem; border-top: 1px dashed var(--border-subtle); padding-top: 1rem;">
                         <span class="metric-label" style="display:block; margin-bottom:5px;">KELLY CRITERION</span>
                         <span class="metric-value positive" style="font-size:1rem;">
                             <!-- Convertimos a CLP usando la fórmula base si sugiere apostar -->
@@ -743,11 +743,11 @@ async function loadTenisMatches() {
                 <div style="margin: 0.8rem 0; display:flex; flex-direction:column; gap:8px;">
                     <div class="match-team" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>${m.jugador1}</span>
-                        <span class="prob-badge" style="background:var(--accent-glow); color:var(--accent-primary); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ1}%</span>
+                        <span class="prob-badge" style="background:#eef2ff; color:var(--accent-primary); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ1}%</span>
                     </div>
                     <div class="match-team" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>${m.jugador2}</span>
-                        <span class="prob-badge" style="background:rgba(255,255,255,0.05); color:var(--text-muted); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ2}%</span>
+                        <span class="prob-badge" style="background:#f1f5f9; color:var(--text-muted); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ2}%</span>
                     </div>
                 </div>
             `;

@@ -19,12 +19,14 @@ namespace BetIQ.API.Controllers
         private readonly BetIQContext _context;
         private readonly IMemoryCache _cache;
         private readonly ILogger<TeamsController> _logger;
+        private readonly IEloService _eloService;
 
-        public TeamsController(BetIQContext context, IMemoryCache cache, ILogger<TeamsController> logger)
+        public TeamsController(BetIQContext context, IMemoryCache cache, ILogger<TeamsController> logger, IEloService eloService)
         {
             _context = context;
             _cache = cache;
             _logger = logger;
+            _eloService = eloService;
         }
 
         // Diccionario estático para mapear los equipos de la NBA a sus estadios y conferencias
@@ -98,7 +100,7 @@ namespace BetIQ.API.Controllers
         [HttpGet("{teamLocal}/probability-vs/{teamVisitante}")]
         public async Task<ActionResult<object>> GetProbability(string teamLocal, string teamVisitante, [FromQuery] string sport = "NBA", [FromQuery] string? superficie = null)
         {
-            var eloService = HttpContext.RequestServices.GetRequiredService<IEloService>();
+            var eloService = _eloService;
             
             int eloLocal = await eloService.ObtenerEloActual(teamLocal, sport, superficie);
             int eloVisitante = await eloService.ObtenerEloActual(teamVisitante, sport, superficie);
@@ -117,7 +119,7 @@ namespace BetIQ.API.Controllers
         [HttpGet("{teamLocal}/ev-vs/{teamVisitante}")]
         public async Task<ActionResult<object>> GetExpectedValue(string teamLocal, string teamVisitante, [FromQuery] double cuotaLocal = 1.0, [FromQuery] double cuotaVisita = 1.0, [FromQuery] string sport = "NBA", [FromQuery] string? superficie = null)
         {
-            var eloService = HttpContext.RequestServices.GetRequiredService<IEloService>();
+            var eloService = _eloService;
             
             int eloLocal = await eloService.ObtenerEloActual(teamLocal, sport, superficie);
             int eloVisitante = await eloService.ObtenerEloActual(teamVisitante, sport, superficie);
@@ -257,7 +259,7 @@ namespace BetIQ.API.Controllers
         [HttpGet("/api/analysis/value-bets")]
         public async Task<ActionResult<object>> GetValueBets([FromQuery] DateTime? date, [FromQuery] string sport = "NBA")
         {
-            var eloService = HttpContext.RequestServices.GetRequiredService<IEloService>();
+            var eloService = _eloService;
             var resultados = new List<object>();
 
             try

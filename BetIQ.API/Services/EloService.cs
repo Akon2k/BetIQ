@@ -277,11 +277,8 @@ namespace BetIQ.API.Services
 
             if (j1 == null || j2 == null) return;
 
-            // Determinar si hay ganador por los sets
-            // Asumiremos que Jugador1 gana si no se define explícitamente, pero lo ideal es leer ResultadoSets.
-            // Para el MVP asumimos que el importador asigna Jugador1 al ganador si hay resultado válido, o usamos la probabilidad.
-            // Aqui podemos leer ResultadoSets para saber quien gano realmente (ej: "6-4 6-2" gano J1, "4-6 2-6" gano J2)
-            // Por defecto, si el scraper puso al ganador en Jugador1:
+            // Determinar ganador. Por convención del importador, J1 es el ganador.
+            // TODO: Leer ResultadoSets para confirmar ganador real (ej: "6-4 6-2" → J1 gana).
             double score1 = 1.0; 
             double score2 = 0.0;
 
@@ -293,12 +290,12 @@ namespace BetIQ.API.Services
 
             int k = CalcularKFactorTenis(partido.Torneo);
             
-            int nuevoElo1 = (int)Math.Round(elo1 + k * (score1 - prob1));
-            int nuevoElo2 = (int)Math.Round(elo2 + k * (score2 - prob2));
+            double delta1 = k * (score1 - prob1);
+            double delta2 = k * (score2 - prob2);
 
-            // Actualizar el ELO general
-            j1.EloActual = (int)Math.Round(j1.EloActual + k * (score1 - prob1));
-            j2.EloActual = (int)Math.Round(j2.EloActual + k * (score2 - prob2));
+            // Actualizar ELO general con el mismo delta
+            j1.EloActual = (int)Math.Round(j1.EloActual + delta1);
+            j2.EloActual = (int)Math.Round(j2.EloActual + delta2);
 
             // Actualizar el ELO de la superficie específica si aplica
             if (!string.IsNullOrEmpty(partido.Superficie))
@@ -306,18 +303,18 @@ namespace BetIQ.API.Services
                 string sup = partido.Superficie.ToLower();
                 if (sup.Contains("arcilla") || sup.Contains("clay"))
                 {
-                    j1.EloArcilla = nuevoElo1;
-                    j2.EloArcilla = nuevoElo2;
+                    j1.EloArcilla = (int)Math.Round((j1.EloArcilla ?? EloInicial) + delta1);
+                    j2.EloArcilla = (int)Math.Round((j2.EloArcilla ?? EloInicial) + delta2);
                 }
                 else if (sup.Contains("pasto") || sup.Contains("hierba") || sup.Contains("grass"))
                 {
-                    j1.EloPasto = nuevoElo1;
-                    j2.EloPasto = nuevoElo2;
+                    j1.EloPasto = (int)Math.Round((j1.EloPasto ?? EloInicial) + delta1);
+                    j2.EloPasto = (int)Math.Round((j2.EloPasto ?? EloInicial) + delta2);
                 }
                 else if (sup.Contains("dura") || sup.Contains("hard"))
                 {
-                    j1.EloDura = nuevoElo1;
-                    j2.EloDura = nuevoElo2;
+                    j1.EloDura = (int)Math.Round((j1.EloDura ?? EloInicial) + delta1);
+                    j2.EloDura = (int)Math.Round((j2.EloDura ?? EloInicial) + delta2);
                 }
             }
 
@@ -325,5 +322,6 @@ namespace BetIQ.API.Services
             _context.Equipos.Update(j2);
             await _context.SaveChangesAsync();
         }
+
     }
 }
