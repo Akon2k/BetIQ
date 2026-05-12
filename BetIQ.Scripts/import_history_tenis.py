@@ -111,4 +111,4 @@ if __name__ == "__main__":
         import pandas as pd
         
     current_year = datetime.now().year
-    process_tennis_history(2025, current_year)
+    process_tennis_history(2020, current_year)

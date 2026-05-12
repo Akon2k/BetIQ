@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BetIQ.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+193e414c15d5cdf20878c04e59d7487609a697bc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6317d21c99b81c5cc21d6f505494d862ae6bf576")]
 [assembly: System.Reflection.AssemblyProductAttribute("BetIQ.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BetIQ.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

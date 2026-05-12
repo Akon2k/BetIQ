@@ -100,13 +100,11 @@ namespace BetIQ.API.Controllers
         [HttpGet("{teamLocal}/probability-vs/{teamVisitante}")]
         public async Task<ActionResult<object>> GetProbability(string teamLocal, string teamVisitante, [FromQuery] string sport = "NBA", [FromQuery] string? superficie = null)
         {
-            var eloService = _eloService;
-            
-            int eloLocal = await eloService.ObtenerEloActual(teamLocal, sport, superficie);
-            int eloVisitante = await eloService.ObtenerEloActual(teamVisitante, sport, superficie);
+            int eloLocal = await _eloService.ObtenerEloActual(teamLocal, sport, superficie);
+            int eloVisitante = await _eloService.ObtenerEloActual(teamVisitante, sport, superficie);
 
-            double probLocal = eloService.CalcularProbabilidadVictoria(eloLocal, eloVisitante, true);
-            double probVisitante = eloService.CalcularProbabilidadVictoria(eloVisitante, eloLocal, false);
+            double probLocal = _eloService.CalcularProbabilidadVictoria(eloLocal, eloVisitante, true);
+            double probVisitante = 1.0 - probLocal; // Complemento exacto
 
             return Ok(new
             {
@@ -119,26 +117,59 @@ namespace BetIQ.API.Controllers
         [HttpGet("{teamLocal}/ev-vs/{teamVisitante}")]
         public async Task<ActionResult<object>> GetExpectedValue(string teamLocal, string teamVisitante, [FromQuery] double cuotaLocal = 1.0, [FromQuery] double cuotaVisita = 1.0, [FromQuery] string sport = "NBA", [FromQuery] string? superficie = null)
         {
-            var eloService = _eloService;
-            
-            int eloLocal = await eloService.ObtenerEloActual(teamLocal, sport, superficie);
-            int eloVisitante = await eloService.ObtenerEloActual(teamVisitante, sport, superficie);
+            int eloLocal = await _eloService.ObtenerEloActual(teamLocal, sport, superficie);
+            int eloVisitante = await _eloService.ObtenerEloActual(teamVisitante, sport, superficie);
 
-            double probLocal = eloService.CalcularProbabilidadVictoria(eloLocal, eloVisitante, true);
-            double probVisitante = eloService.CalcularProbabilidadVictoria(eloVisitante, eloLocal, false);
+            // Fase 2: Ajuste de Fatiga por Calendario (Back-to-Back)
+            int fatigaLocal = 0;
+            int fatigaVisitante = 0;
+            if (sport == "NBA")
+            {
+                fatigaLocal = await _eloService.CalcularAjusteFatigaNBA(teamLocal, DateTime.UtcNow);
+                fatigaVisitante = await _eloService.CalcularAjusteFatigaNBA(teamVisitante, DateTime.UtcNow);
+                
+                eloLocal += fatigaLocal;
+                eloVisitante += fatigaVisitante;
+            }
 
-            double evLocal = eloService.CalcularEV(probLocal, cuotaLocal);
-            double evVisitante = eloService.CalcularEV(probVisitante, cuotaVisita);
+            double probLocal = _eloService.CalcularProbabilidadVictoria(eloLocal, eloVisitante, true);
+            double probVisitante = 1.0 - probLocal; // Complemento exacto
+
+            double evLocal = _eloService.CalcularEV(probLocal, cuotaLocal);
+            double evVisitante = _eloService.CalcularEV(probVisitante, cuotaVisita);
             
-            double kellyLocal = eloService.CalcularPorcentajeKelly(probLocal, cuotaLocal);
-            double kellyVisitante = eloService.CalcularPorcentajeKelly(probVisitante, cuotaVisita);
+            double kellyLocal = _eloService.CalcularPorcentajeKelly(probLocal, cuotaLocal);
+            double kellyVisitante = _eloService.CalcularPorcentajeKelly(probVisitante, cuotaVisita);
+
+            // Fase 1: Proyecciones Monte Carlo (Solo NBA)
+            object? monteCarloData = null;
+            if (sport == "NBA")
+            {
+                var statsLocal = await _eloService.ObtenerEstadisticasAvanzadasNBA(teamLocal);
+                var statsVisita = await _eloService.ObtenerEstadisticasAvanzadasNBA(teamVisitante);
+
+                var mcResult = _eloService.SimularMonteCarloNBA(
+                    eloLocal, eloVisitante, 
+                    statsLocal.OffRtg, statsLocal.DefRtg, statsLocal.Pace,
+                    statsVisita.OffRtg, statsVisita.DefRtg, statsVisita.Pace
+                );
+                
+                monteCarloData = new 
+                {
+                    SpreadLocal = mcResult.SpreadLocal,
+                    TotalPuntosProyectado = mcResult.TotalPuntos,
+                    ProbabilidadOver220 = mcResult.ProbabilidadOver
+                };
+            }
 
             return Ok(new
             {
                 Local = new 
                 { 
                     Equipo = teamLocal, 
-                    Elo = eloLocal, 
+                    EloBase = eloLocal - fatigaLocal,
+                    AjusteFatiga = fatigaLocal,
+                    EloCalculo = eloLocal, 
                     ProbabilidadVictoria = probLocal, 
                     CuotaIngresada = cuotaLocal, 
                     ExpectedValue = Math.Round(evLocal, 4),
@@ -148,14 +179,32 @@ namespace BetIQ.API.Controllers
                 Visitante = new 
                 { 
                     Equipo = teamVisitante, 
-                    Elo = eloVisitante, 
+                    EloBase = eloVisitante - fatigaVisitante,
+                    AjusteFatiga = fatigaVisitante,
+                    EloCalculo = eloVisitante, 
                     ProbabilidadVictoria = probVisitante, 
                     CuotaIngresada = cuotaVisita, 
                     ExpectedValue = Math.Round(evVisitante, 4),
                     IsValueBet = evVisitante > 0,
                     PorcentajeKelly = Math.Round(kellyVisitante, 4)
-                }
+                },
+                MonteCarlo = monteCarloData
             });
+        }
+
+        // POST: api/teams/record-clv
+        // Endpoint para guardar snapshot de CLV
+        [HttpPost("record-clv")]
+        public async Task<IActionResult> RecordCLVSnapshot([FromBody] OddsHistory snapshot)
+        {
+            if (snapshot == null) return BadRequest("Snapshot inválido");
+
+            snapshot.TimestampCaptura = DateTime.UtcNow;
+            
+            _context.OddsHistory.Add(snapshot);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, id = snapshot.Id });
         }
 
         // GET: api/teams/standings
@@ -259,7 +308,7 @@ namespace BetIQ.API.Controllers
         [HttpGet("/api/analysis/value-bets")]
         public async Task<ActionResult<object>> GetValueBets([FromQuery] DateTime? date, [FromQuery] string sport = "NBA")
         {
-            var eloService = _eloService;
+            var eloService = _eloService; // TODO: Eliminar alias cuando se refactorice a clase compartida
             var resultados = new List<object>();
 
             try
@@ -332,9 +381,8 @@ namespace BetIQ.API.Controllers
 
         private void ProcesarValueBet(List<object> resultados, IEloService eloService, int idPartido, string local, string visita, DateTime fecha, int eloLocal, int eloVisita, double cuotaLocal, double cuotaVisita, string sport)
         {
-            // For now, assume home advantage applies universally if true, maybe customize per sport later
             double probLocal = eloService.CalcularProbabilidadVictoria(eloLocal, eloVisita, true);
-            double probVisita = eloService.CalcularProbabilidadVictoria(eloVisita, eloLocal, false);
+            double probVisita = 1.0 - probLocal; // Complemento exacto
 
             double evLocal = eloService.CalcularEV(probLocal, cuotaLocal);
             double evVisita = eloService.CalcularEV(probVisita, cuotaVisita);

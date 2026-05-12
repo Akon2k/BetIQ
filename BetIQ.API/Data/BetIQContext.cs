@@ -14,6 +14,7 @@ namespace BetIQ.API.Data
         public DbSet<TenisMatch> Partidos_Tenis { get; set; }
         public DbSet<PartidoMaestro> Partidos_Maestro { get; set; }
         public DbSet<Equipo> Equipos { get; set; }
+        public DbSet<OddsHistory> OddsHistory { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

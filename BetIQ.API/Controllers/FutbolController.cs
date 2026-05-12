@@ -47,25 +47,40 @@ namespace BetIQ.API.Controllers
             if (!string.IsNullOrEmpty(liga))
                 query = query.Where(p => p.Liga == liga);
 
-            var partidos = await query
+            // Traemos los datos a memoria primero para poder calcular Poisson en C#
+            var rawPartidos = await query
                 .OrderByDescending(p => p.PartidoMaestro.Fecha_Evento)
-                .Select(p => new {
+                .ToListAsync();
+
+            // Calculamos Poisson UNA sola vez por partido (antes se calculaba 5 veces)
+            var partidos = rawPartidos.Select(p => {
+                object? probabilidades = null;
+                if (p.FuerzaAtaqueLocal.HasValue && p.FuerzaDefensaVisita.HasValue)
+                {
+                    var probs = _eloService.CalcularProbabilidadesPoisson(
+                        p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaLocal ?? 1,
+                        p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaVisita.Value);
+                    var marcador = _eloService.ObtenerMarcadorMasProbable(
+                        p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaLocal ?? 1,
+                        p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaVisita.Value);
+                    
+                    probabilidades = new {
+                        probLocal = probs.ProbLocal,
+                        probEmpate = probs.ProbEmpate,
+                        probVisita = probs.ProbVisita,
+                        marcadorPropuesto = $"{marcador.GolesLocal}-{marcador.GolesVisita}"
+                    };
+                }
+                return new {
                     p.ID_Partido,
                     p.EquipoLocal,
                     p.EquipoVisitante,
                     p.Liga,
                     FechaEvento = p.PartidoMaestro.Fecha_Evento,
                     Estado = p.PartidoMaestro.Estado,
-                    Probabilidades = (p.FuerzaAtaqueLocal.HasValue && p.FuerzaDefensaVisita.HasValue) 
-                        ? (object)new { 
-                            probLocal = _eloService.CalcularProbabilidadesPoisson(p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1).ProbLocal,
-                            probEmpate = _eloService.CalcularProbabilidadesPoisson(p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1).ProbEmpate,
-                            probVisita = _eloService.CalcularProbabilidadesPoisson(p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1).ProbVisita,
-                            marcadorPropuesto = _eloService.ObtenerMarcadorMasProbable(p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1).GolesLocal + "-" + _eloService.ObtenerMarcadorMasProbable(p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1).GolesVisita
-                          }
-                        : null
-                })
-                .ToListAsync();
+                    Probabilidades = probabilidades
+                };
+            }).ToList();
 
             return Ok(partidos);
         }
@@ -83,8 +98,8 @@ namespace BetIQ.API.Controllers
                 return BadRequest("Faltan datos de fuerza (Ataque/Defensa) para este partido.");
 
             var probs = _eloService.CalcularProbabilidadesPoisson(
-                p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaVisita.Value, 
-                p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaLocal ?? 1);
+                p.FuerzaAtaqueLocal.Value, p.FuerzaDefensaLocal ?? 1, 
+                p.FuerzaAtaqueVisita ?? 1, p.FuerzaDefensaVisita.Value);
 
             return Ok(new {
                 p.EquipoLocal,
@@ -158,7 +173,7 @@ namespace BetIQ.API.Controllers
             int eloVisita = await _eloService.ObtenerEloActual(p.EquipoVisitante, "Futbol");
             
             double probLocal = _eloService.CalcularProbabilidadVictoria(eloLocal, eloVisita, true);
-            double probVisita = _eloService.CalcularProbabilidadVictoria(eloVisita, eloLocal, false);
+            double probVisita = 1.0 - probLocal; // Complemento exacto (debe sumar 1.0)
 
             int k = 32;
             // En ELO: Victoria = 1.0, Empate = 0.5, Derrota = 0.0

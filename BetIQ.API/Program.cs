@@ -26,6 +26,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
 });
 builder.Services.AddScoped<IEloService, EloService>(); // Registers our custom service
+builder.Services.AddHostedService<ClvTrackerService>(); // Tarea en segundo plano para tracking de cuotas (CLV)
 builder.Services.AddMemoryCache(); // Adds in-memory caching service
 builder.Services.AddCors(); // Adds CORS services
 

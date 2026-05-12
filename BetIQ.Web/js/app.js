@@ -84,7 +84,7 @@ function updateUIForSport() {
     
     const eventsHeader = document.querySelector('#nbaMatches .panel-header h2');
     if (eventsHeader) eventsHeader.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #ff9f43;"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20"/><path d="M2.05 12h19.9"/><path d="M12 22A14.5 14.5 0 0 0 12 2"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20"/><path d="M2 12h20"/><path d="M12 22A14.5 14.5 0 0 0 12 2"/></svg>
         ${titles[currentSport].events}
     `;
     
@@ -117,17 +117,17 @@ async function loadTeams() {
         
         let teams = await response.json();
         
-        // Lista de franquicias oficiales de la NBA
+        // Lista de franquicias oficiales de la NBA (nombres cortos como los devuelve la API)
         const nbaOfficialTeams = [
-            "Atlanta Hawks", "Boston Celtics", "Brooklyn Nets", "Charlotte Hornets", "Chicago Bulls", 
-            "Cleveland Cavaliers", "Dallas Mavericks", "Denver Nuggets", "Detroit Pistons", "Golden State Warriors", 
-            "Houston Rockets", "Indiana Pacers", "LA Clippers", "Los Angeles Lakers", "Memphis Grizzlies", 
-            "Miami Heat", "Milwaukee Bucks", "Minnesota Timberwolves", "New Orleans Pelicans", "New York Knicks", 
-            "Oklahoma City Thunder", "Orlando Magic", "Philadelphia 76ers", "Phoenix Suns", "Portland Trail Blazers", 
-            "Sacramento Kings", "San Antonio Spurs", "Toronto Raptors", "Utah Jazz", "Washington Wizards"
+            "Hawks", "Celtics", "Nets", "Hornets", "Bulls", 
+            "Cavaliers", "Mavericks", "Nuggets", "Pistons", "Warriors", 
+            "Rockets", "Pacers", "Clippers", "Lakers", "Grizzlies", 
+            "Heat", "Bucks", "Timberwolves", "Pelicans", "Knicks", 
+            "Thunder", "Magic", "76ers", "Suns", "Blazers", 
+            "Kings", "Spurs", "Raptors", "Jazz", "Wizards"
         ];
 
-        // Filtra los equipos para mostrar solo los correspondientes al deporte actual (NBA, Tenis, etc.)
+        // Filtra los equipos para mostrar solo los correspondientes al deporte actual
         allTeams = teams.filter(t => {
             if (currentSport === 'NBA') {
                 return t.deporte === 'NBA' && nbaOfficialTeams.includes(t.nombreEquipo);
@@ -142,7 +142,7 @@ async function loadTeams() {
         renderRankingTable(); // Dibuja la tabla ELO
     } catch (error) {
         console.error("Error cargando equipos:", error);
-        rankingBody.innerHTML = `<tr><td colspan="4" class="text-center" style="color: #ef4444;">Error al cargar datos. ¿Está la API encendida?</td></tr>`;
+        rankingBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--danger);">Error al cargar datos. ¿Está la API encendida?</td></tr>`;
     }
 }
 
@@ -277,6 +277,23 @@ async function calculateProbability() {
             winnerText.innerHTML = `Empate técnico.`;
         }
 
+        // Renderizado de Insights Avanzados (Fase 1 y 2 - Solo NBA)
+        if (data.monteCarlo) {
+            const mc = data.monteCarlo;
+            const spreadStr = mc.spreadLocal > 0 
+                ? `${local} +${mc.spreadLocal}` 
+                : `${local} ${mc.spreadLocal}`;
+            const fLocal = data.local.ajusteFatiga < 0 ? ` <span style="color:var(--danger);font-size:0.7em;">(Fatiga ${data.local.ajusteFatiga})</span>` : '';
+            const fVisitor = data.visitante.ajusteFatiga < 0 ? ` <span style="color:var(--danger);font-size:0.7em;">(Fatiga ${data.visitante.ajusteFatiga})</span>` : '';
+            
+            winnerText.innerHTML += `
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: var(--accent-secondary); font-weight: normal; background: rgba(255,255,255,0.03); padding: 10px; border-radius: var(--radius-sm); border: 1px dashed var(--border-subtle);">
+                    <div style="margin-bottom: 5px;"><strong>Monte Carlo (10k sims):</strong> Spread proyectado: <code>${spreadStr}</code> | Total Puntos: <code>${mc.totalPuntosProyectado}</code></div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">Ajustes dinámicos de modelo: ${local}${fLocal} vs ${visitor}${fVisitor}</div>
+                </div>
+            `;
+        }
+
         // Análisis de Rentabilidad
         evAlerts.innerHTML = '';
         const bankroll = parseFloat(bankrollInput.value) || 0;
@@ -309,6 +326,27 @@ async function calculateProbability() {
                                    <h4 style="margin-bottom:10px;">${visitor}</h4>
                                    ${renderAlert(data.visitante, cuotaVisita)}
                                </div>`;
+                               
+        // Registrar Snapshot silencioso para Tracking CLV
+        try {
+            await fetch(`${API_BASE_URL}/teams/record-clv`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    deporte: currentSport,
+                    equipoLocal: local,
+                    equipoVisitante: visitor,
+                    cuotaLocalRegistrada: parseFloat(cuotaLocal),
+                    cuotaVisitanteRegistrada: parseFloat(cuotaVisita),
+                    probabilidadModeloLocal: pLocal,
+                    expectedValueLocal: data.local.expectedValue,
+                    expectedValueVisita: data.visitante.expectedValue,
+                    esValueBet: data.local.isValueBet || data.visitante.isValueBet,
+                    esLineaDeCierre: false // Se podría cambiar a true si el partido es inminente
+                })
+            });
+        } catch(e) { console.error('Error guardando CLV:', e); }
+        
         
     } catch (error) {
         console.error("Error calculando:", error);
@@ -346,13 +384,27 @@ async function loadValueBets() {
             return;
         }
 
-        data.oportunidades.forEach(match => {
-            // Buscamos cuál de los dos lados es el "Value Bet"
+        // Redefinimos las apuestas para mostrar primero las de mayor rentabilidad (EV)
+        let bestBets = data.oportunidades.map(match => {
             const betTarget = match.local.valueBet ? match.local : match.visitante;
             const betAgainst = match.local.valueBet ? match.visitante : match.local;
-            
-            // Si el EV es muy alto (+1.0), le damos borde infinito
-            const isHighValue = betTarget.ev > 0.8; 
+            return { match, betTarget, betAgainst };
+        }).filter(item => item.betTarget.ev > 0);
+
+        // Ordenar de mayor EV a menor EV
+        bestBets.sort((a, b) => b.betTarget.ev - a.betTarget.ev);
+
+        // Actualizamos el número de hallazgos
+        dateLabel.textContent = `Analizando para: ${data.analisis_Para} | ${bestBets.length} mejores apuestas detectadas`;
+
+        if (bestBets.length === 0) {
+            container.innerHTML = `<p style="color:var(--text-muted); grid-column: 1/-1;">No hay oportunidades con EV positivo en este momento.</p>`;
+            return;
+        }
+
+        bestBets.forEach(({match, betTarget, betAgainst}, index) => {
+            // Destacamos visualmente la mejor apuesta del día (la primera) o si el EV es muy alto
+            const isHighValue = index === 0 || betTarget.ev >= 0.5;
 
             // Formatear Fecha y Hora al horario de Chile (CLT/CLST)
             const eventDate = new Date(match.fecha);
@@ -371,8 +423,8 @@ async function loadValueBets() {
             card.innerHTML = `
                 <div class="vb-content">
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 1rem;">
-                        <span style="background:var(--success-soft); color:var(--success); padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:800;">
-                            EV+ ${betTarget.ev}
+                        <span style="background:var(--success-soft); color:var(--success); padding:4px 8px; border-radius:4px; font-size:0.8rem; font-weight:800; border: 1px solid var(--success);">
+                            🔥 EV+ ${betTarget.ev}
                         </span>
                         <div style="text-align: right;">
                             <span style="display:block; color:var(--accent-secondary); font-size:0.75rem; font-weight:600;">
@@ -452,9 +504,9 @@ async function loadNBAMatches() {
     const today = new Date();
     const dateString = today.toISOString().split('T')[0];
     
-    // Formatear fecha para el UI
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    dateLabel.textContent = today.toLocaleDateString('es-ES', options);
+    // Formatear fecha para el UI en formato Chile
+    const options = { timeZone: 'America/Santiago', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    dateLabel.textContent = today.toLocaleDateString('es-CL', options);
 
     try {
         // Llama a la API (NBAMatchesController -> GET /NBAMatches?date=YYYY-MM-DD)
@@ -743,11 +795,11 @@ async function loadTenisMatches() {
                 <div style="margin: 0.8rem 0; display:flex; flex-direction:column; gap:8px;">
                     <div class="match-team" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>${m.jugador1}</span>
-                        <span class="prob-badge" style="background:#eef2ff; color:var(--accent-primary); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ1}%</span>
+                        <span class="prob-badge" style="background:var(--accent-glow); color:var(--accent-primary); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold; font-family:var(--font-mono);">${probJ1}%</span>
                     </div>
                     <div class="match-team" style="display:flex; justify-content:space-between; align-items:center;">
                         <span>${m.jugador2}</span>
-                        <span class="prob-badge" style="background:#f1f5f9; color:var(--text-muted); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold;">${probJ2}%</span>
+                        <span class="prob-badge" style="background:rgba(255,255,255,0.04); color:var(--text-muted); padding:2px 6px; border-radius:4px; font-size:0.8rem; font-weight:bold; font-family:var(--font-mono);">${probJ2}%</span>
                     </div>
                 </div>
             `;

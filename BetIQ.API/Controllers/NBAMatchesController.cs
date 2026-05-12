@@ -165,10 +165,9 @@ namespace BetIQ.API.Controllers
             partidoNba.PartidoMaestro.Estado = "Finalizado";
             
             // Actualizamos los ELOs de los equipos implicados
+            // Nota: ActualizarElo() ya ejecuta SaveChangesAsync() internamente,
+            // guardando tanto el resultado del partido como los nuevos ELOs.
             await _eloService.ActualizarElo(partidoNba);
-
-            // Guardamos todos los cambios en la base de datos
-            await _context.SaveChangesAsync();
 
             // Invalidamos los cachés relevantes
             string cacheKeyDate = $"Matches_{partidoNba.PartidoMaestro.Fecha_Evento:yyyyMMdd}";

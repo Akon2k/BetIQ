@@ -7,11 +7,13 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger, IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task InvokeAsync(HttpContext httpContext)
@@ -27,17 +29,26 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    private static Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
         context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-        var response = new
+        // Solo exponer detalles de error en Development para evitar Information Disclosure
+        object response;
+        if (_env.IsDevelopment())
         {
-            Message = "Internal Server Error from the custom middleware.",
-            Detailed = exception.Message,
-            InnerException = exception.InnerException?.Message
-        };
+            response = new
+            {
+                Message = "Internal Server Error",
+                Detailed = exception.Message,
+                InnerException = exception.InnerException?.Message
+            };
+        }
+        else
+        {
+            response = new { Message = "Ha ocurrido un error interno en el servidor." };
+        }
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
         var jsonResponse = JsonSerializer.Serialize(response, jsonOptions);
@@ -45,3 +56,4 @@ public class ExceptionHandlingMiddleware
         return context.Response.WriteAsync(jsonResponse);
     }
 }
+

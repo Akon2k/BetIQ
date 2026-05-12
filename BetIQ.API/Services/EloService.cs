@@ -17,8 +17,14 @@ namespace BetIQ.API.Services
         Task<int> CalcularKFactorDinamico(string nombreEquipo, string deporte = "NBA");
         
         // Fútbol - Modelo de Poisson
+        // Parámetros: faL=FuerzaAtaqueLocal, fdL=FuerzaDefensaLocal, faV=FuerzaAtaqueVisita, fdV=FuerzaDefensaVisita
         (double ProbLocal, double ProbEmpate, double ProbVisita) CalcularProbabilidadesPoisson(decimal faL, decimal fdL, decimal faV, decimal fdV);
         (int GolesLocal, int GolesVisita, double Probabilidad) ObtenerMarcadorMasProbable(decimal faL, decimal fdL, decimal faV, decimal fdV);
+        
+        // Fase 1 y 2 - Advanced Analytics NBA
+        (double SpreadLocal, double TotalPuntos, double ProbabilidadOver) SimularMonteCarloNBA(int eloLocal, int eloVisitante, double offRtgLocal, double defRtgLocal, double paceLocal, double offRtgVisita, double defRtgVisita, double paceVisita, double overUnderLine = 220.5);
+        Task<int> CalcularAjusteFatigaNBA(string nombreEquipo, DateTime fechaPartido);
+        Task<(double OffRtg, double DefRtg, double Pace)> ObtenerEstadisticasAvanzadasNBA(string nombreEquipo);
     }
 
     public class EloService : IEloService
@@ -102,7 +108,9 @@ namespace BetIQ.API.Services
         }
 
         // --- FÚTBOL: MODELO DE POISSON ---
-        public (int GolesLocal, int GolesVisita, double Probabilidad) ObtenerMarcadorMasProbable(decimal faL, decimal fdV, decimal faV, decimal fdL)
+        // Lambda Local = Ataque Local × Defensa Visitante (cuántos goles espera anotar el local)
+        // Lambda Visita = Ataque Visitante × Defensa Local (cuántos goles espera anotar el visitante)
+        public (int GolesLocal, int GolesVisita, double Probabilidad) ObtenerMarcadorMasProbable(decimal faL, decimal fdL, decimal faV, decimal fdV)
         {
             double lambdaLocal = (double)(faL * fdV);
             double lambdaVisita = (double)(faV * fdL);
@@ -130,7 +138,7 @@ namespace BetIQ.API.Services
             return (bestGolesL, bestGolesV, Math.Round(maxProb, 4));
         }
 
-        public (double ProbLocal, double ProbEmpate, double ProbVisita) CalcularProbabilidadesPoisson(decimal faL, decimal fdV, decimal faV, decimal fdL)
+        public (double ProbLocal, double ProbEmpate, double ProbVisita) CalcularProbabilidadesPoisson(decimal faL, decimal fdL, decimal faV, decimal fdV)
         {
             // Lambda es el promedio esperado de goles
             double lambdaLocal = (double)(faL * fdV);
@@ -166,6 +174,132 @@ namespace BetIQ.API.Services
             double res = 1;
             for (int i = 2; i <= n; i++) res *= i;
             return res;
+        }
+
+        // --- NBA: FASE 1 - SIMULACIÓN MONTE CARLO ---
+        public (double SpreadLocal, double TotalPuntos, double ProbabilidadOver) SimularMonteCarloNBA(
+            int eloLocal, int eloVisitante, 
+            double offRtgLocal, double defRtgLocal, double paceLocal, 
+            double offRtgVisita, double defRtgVisita, double paceVisita, 
+            double overUnderLine = 220.5)
+        {
+            // Usar estadísticas avanzadas reales (Rendimiento Reciente) para la expectativa
+            // Puntos esperados = (OffRtg Equipo A + DefRtg Equipo B) / 2 * (Pace Promedio / 100)
+            double avgPace = (paceLocal + paceVisita) / 2.0;
+            
+            double expectedPtsLocal = ((offRtgLocal + defRtgVisita) / 2.0) * (avgPace / 100.0);
+            double expectedPtsVisita = ((offRtgVisita + defRtgLocal) / 2.0) * (avgPace / 100.0);
+
+            // Ajuste cruzado con el ELO (sabiduría histórica vs estado de forma reciente)
+            double pointsPerEloDiff = 0.033;
+            double eloVirtualLocal = eloLocal + HomeAdvantage;
+            double eloDiff = eloVirtualLocal - eloVisitante;
+            double eloExpectedSpread = eloDiff * pointsPerEloDiff;
+            
+            // Promedio ponderado (60% stats recientes, 40% ELO histórico)
+            double baseExpectedLocal = (expectedPtsLocal * 0.6) + ((expectedPtsLocal + eloExpectedSpread/2) * 0.4);
+            double baseExpectedVisitante = (expectedPtsVisita * 0.6) + ((expectedPtsVisita - eloExpectedSpread/2) * 0.4);
+
+            int iterations = 10000;
+            double totalSpread = 0;
+            double totalPoints = 0;
+            int overCount = 0;
+
+            Random rand = new Random();
+            double stdDev = 12.0; // Desviación estándar de puntos de un equipo en un partido NBA
+
+            for (int i = 0; i < iterations; i++)
+            {
+                // Box-Muller para distribución normal
+                double u1 = 1.0 - rand.NextDouble(); 
+                double u2 = 1.0 - rand.NextDouble();
+                double randStdNormal1 = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+                
+                u1 = 1.0 - rand.NextDouble();
+                u2 = 1.0 - rand.NextDouble();
+                double randStdNormal2 = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+
+                double simPointsLocal = baseExpectedLocal + stdDev * randStdNormal1;
+                double simPointsVisitante = baseExpectedVisitante + stdDev * randStdNormal2;
+
+                double simSpread = simPointsLocal - simPointsVisitante; // Spread a favor del local
+                double simTotal = simPointsLocal + simPointsVisitante;
+
+                totalSpread += simSpread;
+                totalPoints += simTotal;
+                
+                if (simTotal > overUnderLine) overCount++;
+            }
+
+            double finalSpread = Math.Round(totalSpread / iterations, 1);
+            double finalTotal = Math.Round(totalPoints / iterations, 1);
+            double probOver = Math.Round((double)overCount / iterations, 4);
+
+            return (finalSpread, finalTotal, probOver);
+        }
+
+        // --- NBA: FASE 2 - MODELADO DE FATIGA ---
+        public async Task<int> CalcularAjusteFatigaNBA(string nombreEquipo, DateTime fechaPartido)
+        {
+            // Detectar si el equipo jugó el día anterior (Back-to-Back)
+            var fechaAnterior = fechaPartido.AddDays(-1).Date;
+            
+            bool jugoAyer = await _context.Partidos_NBA
+                .Include(p => p.PartidoMaestro)
+                .AnyAsync(p => (p.EquipoLocal == nombreEquipo || p.EquipoVisitante == nombreEquipo)
+                            && p.PartidoMaestro.Fecha_Evento.Date == fechaAnterior);
+
+            // Si jugó ayer, aplicamos una penalización al ELO equivalente a perder casi la mitad de la ventaja de localía
+            if (jugoAyer)
+            {
+                return -45;
+            }
+            
+            return 0;
+        }
+
+        // --- NBA: ESTADÍSTICAS AVANZADAS PARA MONTE CARLO ---
+        public async Task<(double OffRtg, double DefRtg, double Pace)> ObtenerEstadisticasAvanzadasNBA(string nombreEquipo)
+        {
+            var ultimosPartidos = await _context.Partidos_NBA
+                .Include(p => p.PartidoMaestro)
+                .Where(p => (p.EquipoLocal == nombreEquipo || p.EquipoVisitante == nombreEquipo) 
+                           && p.PartidoMaestro.Estado == "Finalizado"
+                           && p.PuntosLocal != null && p.PuntosVisitante != null)
+                .OrderByDescending(p => p.PartidoMaestro.Fecha_Evento)
+                .Take(5)
+                .ToListAsync();
+
+            if (!ultimosPartidos.Any()) return (114.0, 114.0, 100.0); // Promedio Liga default
+
+            double totalOff = 0;
+            double totalDef = 0;
+            double totalPace = 0;
+
+            foreach (var p in ultimosPartidos)
+            {
+                if (p.EquipoLocal == nombreEquipo)
+                {
+                    totalOff += (double)p.EficienciaOfensivaLocal;
+                    totalDef += (double)p.EficienciaDefensivaLocal;
+                }
+                else
+                {
+                    // Si es visitante, la ofensa del local fue la defensa de este equipo.
+                    totalOff += (double)p.EficienciaDefensivaLocal; 
+                    totalDef += (double)p.EficienciaOfensivaLocal;
+                }
+                // Aproximación rápida al Pace: Tiros intentados ~ Puntos / algo. Usamos promedio histórico rápido
+                totalPace += (double)p.PromedioPuntosTotal / 2.2;
+            }
+
+            int count = ultimosPartidos.Count;
+            // Para evitar valores nulos o 0 si la BD tiene fallos de ingesta
+            double resOff = totalOff / count > 0 ? totalOff / count : 114.0;
+            double resDef = totalDef / count > 0 ? totalDef / count : 114.0;
+            double resPace = totalPace / count > 0 ? totalPace / count : 100.0;
+
+            return (resOff, resDef, resPace);
         }
 
         public async Task<int> ObtenerEloActual(string nombreEquipo, string deporte, string? superficie = null)
