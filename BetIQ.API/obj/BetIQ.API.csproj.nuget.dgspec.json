@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\BetIQ.API.csproj": {}
+    "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\BetIQ.API.csproj": {}
   },
   "projects": {
-    "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\BetIQ.API.csproj": {
+    "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\BetIQ.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\BetIQ.API.csproj",
+        "projectUniqueName": "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\BetIQ.API.csproj",
         "projectName": "BetIQ.API",
-        "projectPath": "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\BetIQ.API.csproj",
+        "projectPath": "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\BetIQ.API.csproj",
         "packagesPath": "C:\\Users\\iscv\\.nuget\\packages\\",
-        "outputPath": "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\obj\\",
+        "outputPath": "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

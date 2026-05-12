@@ -190,7 +190,7 @@ function renderRankingTable() {
         tr.innerHTML = `
             <td>#${realIndex + 1}</td>
             <td>${team.nombreEquipo}</td>
-            <td style="color: var(--accent-secondary); font-weight: bold;">${team.eloActual}</td>
+            <td style="color: var(--accent-primary); font-weight: 700;">${team.eloActual}</td>
             <td>${team.deporte}</td>
         `;
         rankingBody.appendChild(tr);
@@ -289,12 +289,12 @@ async function calculateProbability() {
                     const stake = (bankroll * teamData.porcentajeKelly).toFixed(2);
                     kellyHtml = `<div style="margin-top:10px;color:var(--success);">Sugerencia: $${stake}</div>`;
                 }
-                return `<div style="padding:15px; border-radius:8px; border:1px solid var(--success); background:var(--success-glow);">
+                return `<div style="padding:15px; border-radius:8px; border:1px solid var(--success); background:var(--success-soft);">
                             <span style="color:var(--success); font-weight:bold;">✅ VALUE BET (+${margin}%)</span>
                             ${kellyHtml}
                         </div>`;
             } else {
-                return `<div style="padding:15px; border-radius:8px; border:1px solid var(--danger); background:var(--danger-glow);">
+                return `<div style="padding:15px; border-radius:8px; border:1px solid var(--danger); background:var(--danger-soft);">
                             <span style="color:var(--danger); font-weight:bold;">🚫 EV NEGATIVO (${margin}%)</span>
                         </div>`;
             }
@@ -380,7 +380,6 @@ async function loadValueBets() {
                                 ${dateString} - ${timeString}
                             </span>
                             <span style="color:var(--text-muted); font-size:0.7rem;">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                                 ${match.estadio}
                             </span>
                         </div>
@@ -491,10 +490,8 @@ async function loadNBAMatches() {
             card.innerHTML = `
                 <div class="match-header">
                     <span style="color:var(--text-muted);">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                         ${timeStr}
                         <span style="margin-left:8px; font-size:0.75rem;">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                             ${match.estadio || 'Estadio por confirmar'}
                         </span>
                     </span>
@@ -570,9 +567,9 @@ function renderStandingsTable(tbodyId, teamsArray) {
         
         let positionBadge = `<span class="pos-badge">${team.posicion}</span>`;
         if (isPlayoff) {
-            positionBadge = `<span class="pos-badge" style="background:var(--success-glow); color:var(--success); border:1px solid var(--success);">${team.posicion}</span>`;
+            positionBadge = `<span class="pos-badge" style="background:var(--success-soft); color:var(--success); border:1px solid var(--success);">${team.posicion}</span>`;
         } else if (isPlayIn) {
-            positionBadge = `<span class="pos-badge" style="background:rgba(255, 152, 0, 0.1); color:var(--warning); border:1px solid var(--warning);">${team.posicion}</span>`;
+            positionBadge = `<span class="pos-badge" style="background:var(--warning-soft); color:var(--warning); border:1px solid var(--warning);">${team.posicion}</span>`;
         }
 
         // Determinar formato positivo o negativo de la Diferencia
@@ -583,9 +580,9 @@ function renderStandingsTable(tbodyId, teamsArray) {
             <td>${positionBadge}</td>
             <td style="font-weight: 600; color: var(--text-main); text-align: left;">${team.equipo}</td>
             <td>${team.pj}</td>
-            <td style="color: var(--success);">${team.v}</td>
-            <td style="color: var(--accent-primary);">${team.d}</td>
-            <td style="font-weight: 700; color: var(--accent-secondary);">${team.pct.toFixed(3)}</td>
+            <td style="color: var(--success); font-weight: 600;">${team.v}</td>
+            <td style="color: var(--danger); font-weight: 600;">${team.d}</td>
+            <td style="font-weight: 700; color: var(--accent-primary);">${team.pct.toFixed(3)}</td>
             <td class="hide-mobile" style="color: var(--text-muted);">${team.pf}</td>
             <td class="hide-mobile" style="color: var(--text-muted);">${team.pc}</td>
             <td style="font-weight: bold; color: ${difColor};">${difValue}</td>

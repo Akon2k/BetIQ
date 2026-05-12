@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "Jly3G6dl3tE=",
+  "dgSpecHash": "n1xzwYWvZho=",
   "success": true,
-  "projectFilePath": "C:\\Proyectos Antigravity\\TriBET\\BetIQ.API\\BetIQ.API.csproj",
+  "projectFilePath": "C:\\Proyectos Antigravity\\BetIQ\\BetIQ.API\\BetIQ.API.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\iscv\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\iscv\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

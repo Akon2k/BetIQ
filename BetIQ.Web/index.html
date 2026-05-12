@@ -11,8 +11,8 @@
 <body>
     <header class="app-header">
         <div class="logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-secondary);"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            <span style="color:white; font-weight: 300;">Tri</span>BET
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <span style="font-weight: 400; color: var(--text-muted);">Tri</span><span style="font-weight: 800; color: var(--text-main);">BET</span>
         </div>
         <nav class="app-nav">
             <a href="#dashboard" class="active">Dashboard</a>
@@ -33,10 +33,9 @@
         <section class="panel">
             <div class="panel-header">
                 <h2>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--success);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     Oportunidades del Mercado
                 </h2>
-                <span id="dateOfAnalysis" style="color: var(--text-muted); font-size: 0.9rem;">Analizando...</span>
+                <span id="dateOfAnalysis" style="color: var(--text-muted); font-size: 0.8rem; font-weight: 500;">Analizando...</span>
             </div>
             
             <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Cruces matemáticos entre Modelo ELO BetIQ y Cuotas Mundiales The Odds API.</p>
@@ -50,8 +49,7 @@
 
                 <!-- Columna derecha: Glosario vertical -->
                 <div class="glosario-panel glosario-sidebar">
-                    <h3 style="margin-bottom: 14px; color: var(--accent-secondary); font-size: 1rem;">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:6px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    <h3 style="margin-bottom: 12px; color: var(--text-main); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
                         Glosario del Radar
                     </h3>
                     <div class="glosario-grid glosario-vertical">
@@ -106,22 +104,21 @@
         <section id="calculadora" class="panel">
             <div class="panel-header">
                 <h2>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-primary);"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/><line x1="8" y1="14" x2="8.01" y2="14"/><line x1="12" y1="14" x2="12.01" y2="14"/><line x1="16" y1="14" x2="16.01" y2="14"/><line x1="8" y1="18" x2="8.01" y2="18"/><line x1="12" y1="18" x2="12.01" y2="18"/><line x1="16" y1="18" x2="16.01" y2="18"/></svg>
                     Simulador ELO En Vivo
                 </h2>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                    <div id="surfaceSelectorWrap" style="display: none; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">SUPERFICIE</span>
-                        <select id="surfaceSelector" style="background: transparent; border: none; color: var(--accent-secondary); padding: 0; margin-left: 5px; outline: none; font-weight: bold; font-family: var(--font-family); cursor: pointer;">
+                    <div id="surfaceSelectorWrap" style="display: none; background: #f1f5f9; padding: 4px 12px; border-radius: 6px;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">SUPERFICIE</span>
+                        <select id="surfaceSelector" style="background: transparent; border: none; color: var(--accent-primary); padding: 0; margin-left: 5px; outline: none; font-weight: 700; font-family: var(--font-family); cursor: pointer; font-size: 0.75rem;">
                             <option value="Arcilla">Arcilla</option>
                             <option value="Dura">Dura</option>
                             <option value="Pasto">Pasto</option>
                         </select>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
-                        <span style="font-size: 0.8rem; color: var(--text-muted);">BANKROLL</span>
-                        <span style="color: var(--success); font-weight: 800;">$</span>
-                        <input type="number" id="bankrollInput" value="1000" style="background: transparent; border: none; color: white; width: 80px; padding: 0; outline: none; font-weight: bold; font-family: var(--font-family);">
+                    <div style="display: flex; align-items: center; gap: 5px; background: #f1f5f9; padding: 4px 12px; border-radius: 6px;">
+                        <span style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">BANKROLL</span>
+                        <span style="color: var(--success); font-weight: 800; font-size: 0.75rem;">$</span>
+                        <input type="number" id="bankrollInput" value="1000" style="background: transparent; border: none; color: var(--text-main); width: 60px; padding: 0; outline: none; font-weight: 700; font-family: var(--font-family); font-size: 0.75rem;">
                     </div>
                 </div>
             </div>
